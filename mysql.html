@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySQL学习攻略</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .code-block {
+                @apply bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto;
+            }
+            .section-heading {
+                @apply text-2xl md:text-3xl font-bold text-primary mb-4 border-b-2 border-primary/20 pb-2;
+            }
+            .sub-heading {
+                @apply text-xl font-semibold text-dark mb-3 mt-6;
+            }
+            .content-container {
+                @apply max-w-6xl mx-auto px-4 py-8;
+            }
+            .nav-link {
+                @apply text-gray-700 hover:text-primary transition-colors duration-200 px-3 py-2 rounded-md;
+            }
+            .nav-link.active {
+                @apply bg-primary/10 text-primary font-medium;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white shadow-md">
+        <nav class="content-container flex justify-between items-center py-4">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-database text-primary text-2xl"></i>
+                <span class="text-xl font-bold text-dark">MySQL学习攻略</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-1">
+                <a href="#overview" class="nav-link active">概述</a>
+                <a href="#principle" class="nav-link">原理</a>
+                <a href="#installation" class="nav-link">安装配置</a>
+                <a href="#basic-operations" class="nav-link">基本操作</a>
+                <a href="#data-types" class="nav-link">数据类型</a>
+                <a href="#advanced-operations" class="nav-link">高级操作</a>
+                <a href="#optimization" class="nav-link">优化</a>
+                <a href="#backup-recovery" class="nav-link">备份恢复</a>
+                <a href="#case-studies" class="nav-link">案例分析</a>
+                <a href="#best-practices" class="nav-link">最佳实践</a>
+            </div>
+            <button class="md:hidden text-gray-700 focus:outline-none" id="mobile-menu-button">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </nav>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white shadow-lg absolute w-full" id="mobile-menu">
+            <div class="flex flex-col py-2 space-y-1">
+                <a href="#overview" class="nav-link active">概述</a>
+                <a href="#principle" class="nav-link">原理</a>
+                <a href="#installation" class="nav-link">安装配置</a>
+                <a href="#basic-operations" class="nav-link">基本操作</a>
+                <a href="#data-types" class="nav-link">数据类型</a>
+                <a href="#advanced-operations" class="nav-link">高级操作</a>
+                <a href="#optimization" class="nav-link">优化</a>
+                <a href="#backup-recovery" class="nav-link">备份恢复</a>
+                <a href="#case-studies" class="nav-link">案例分析</a>
+                <a href="#best-practices" class="nav-link">最佳实践</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="content-container">
+        <!-- 概述 -->
+        <section id="overview" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL概述</h1>
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <p class="mb-4">MySQL是一种开源的关系型数据库管理系统(RDBMS)，由瑞典MySQL AB公司开发，目前属于Oracle公司。MySQL凭借其高性能、可靠性和易用性，成为了Web应用程序中最受欢迎的数据库之一。</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div class="bg-blue-50 rounded-lg p-4 card-hover">
+                        <div class="flex items-center mb-3">
+                            <i class="fa fa-bolt text-primary text-xl mr-3"></i>
+                            <h3 class="font-semibold text-lg">高性能</h3>
+                        </div>
+                        <p>MySQL能够处理大型数据集和高并发访问，通过优化查询执行和索引策略，提供出色的性能表现。</p>
+                    </div>
+                    
+                    <div class="bg-green-50 rounded-lg p-4 card-hover">
+                        <div class="flex items-center mb-3">
+                            <i class="fa fa-shield text-secondary text-xl mr-3"></i>
+                            <h3 class="font-semibold text-lg">可靠性</h3>
+                        </div>
+                        <p>支持事务处理、数据复制和备份恢复机制，确保数据的完整性和安全性。</p>
+                    </div>
+                    
+                    <div class="bg-yellow-50 rounded-lg p-4 card-hover">
+                        <div class="flex items-center mb-3">
+                            <i class="fa fa-code-fork text-yellow-500 text-xl mr-3"></i>
+                            <h3 class="font-semibold text-lg">开源免费</h3>
+                        </div>
+                        <p>MySQL采用GPL开源许可证，用户可以自由使用、修改和分发，降低了使用成本。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-6">
+                <h3 class="font-bold text-lg mb-3">主要应用场景</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Web应用程序后端数据存储（如WordPress、Drupal等）</li>
+                    <li>企业级应用系统（如ERP、CRM等）</li>
+                    <li>日志记录和分析系统</li>
+                    <li>数据仓库和商业智能应用</li>
+                    <li>移动应用和游戏后端数据存储</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 原理 -->
+        <section id="principle" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL原理</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">体系结构</h3>
+                <p class="mb-4">MySQL采用了分层的体系结构，主要分为以下几层：</p>
+                
+                <div class="relative h-80 md:h-96 mb-6">
+                    <div class="absolute inset-0 flex flex-col justify-between">
+                        <div class="bg-gray-100 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-semibold text-primary">连接层</h4>
+                            <p>处理客户端连接、认证和线程管理</p>
+                        </div>
+                        
+                        <div class="bg-gray-100 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-semibold text-primary">服务层</h4>
+                            <p>包含查询解析器、优化器、缓存等核心组件</p>
+                        </div>
+                        
+                        <div class="bg-gray-100 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-semibold text-primary">存储引擎层</h4>
+                            <p>负责数据的存储和检索，支持多种存储引擎</p>
+                        </div>
+                        
+                        <div class="bg-gray-100 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-semibold text-primary">文件系统层</h4>
+                            <p>管理物理数据文件和日志文件</p>
+                        </div>
+                    </div>
+                    <div class="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-primary/30"></div>
+                </div>
+                
+                <h3 class="sub-heading">存储引擎</h3>
+                <p class="mb-4">MySQL支持多种存储引擎，每种引擎都有其特点和适用场景：</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100 text-gray-700">
+                            <tr>
+                                <th class="py-3 px-4 text-left">存储引擎</th>
+                                <th class="py-3 px-4 text-left">事务支持</th>
+                                <th class="py-3 px-4 text-left">外键支持</th>
+                                <th class="py-3 px-4 text-left">索引与数据存储</th>
+                                <th class="py-3 px-4 text-left">适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="py-3 px-4 font-medium">InnoDB</td>
+                                <td class="py-3 px-4"><i class="fa fa-check text-green-500"></i></td>
+                                <td class="py-3 px-4"><i class="fa fa-check text-green-500"></i></td>
+                                <td class="py-3 px-4">聚集索引存储</td>
+                                <td class="py-3 px-4">事务处理、高并发读写</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">MyISAM</td>
+                                <td class="py-3 px-4"><i class="fa fa-times text-red-500"></i></td>
+                                <td class="py-3 px-4"><i class="fa fa-times text-red-500"></i></td>
+                                <td class="py-3 px-4">索引和数据分开存储</td>
+                                <td class="py-3 px-4">读多写少、无事务需求</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">Memory</td>
+                                <td class="py-3 px-4"><i class="fa fa-times text-red-500"></i></td>
+                                <td class="py-3 px-4"><i class="fa fa-times text-red-500"></i></td>
+                                <td class="py-3 px-4">数据存储在内存中</td>
+                                <td class="py-3 px-4">临时数据、高速缓存</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">Archive</td>
+                                <td class="py-3 px-4"><i class="fa fa-times text-red-500"></i></td>
+                                <td class="py-3 px-4"><i class="fa fa-times text-red-500"></i></td>
+                                <td class="py-3 px-4">高度压缩存储</td>
+                                <td class="py-3 px-4">日志归档、历史数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 class="sub-heading">查询执行流程</h3>
+                <p class="mb-4">MySQL执行查询的基本流程如下：</p>
+                
+                <ol class="list-decimal pl-5 space-y-3 mb-6">
+                    <li><strong>客户端发送查询请求</strong>：客户端通过连接将SQL语句发送到MySQL服务器</li>
+                    <li><strong>查询缓存检查</strong>：检查查询是否已缓存，如果是则直接返回结果</li>
+                    <li><strong>查询解析</strong>：解析SQL语句，生成解析树</li>
+                    <li><strong>查询优化</strong>：生成最优执行计划（选择索引、连接顺序等）</li>
+                    <li><strong>查询执行</strong>：根据执行计划执行查询，访问存储引擎获取数据</li>
+                    <li><strong>结果返回</strong>：将查询结果返回给客户端</li>
+                </ol>
+                
+                <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-400 mb-4">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-lightbulb-o text-yellow-500 mr-2"></i>关键概念</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>事务</strong>：一组不可分割的数据库操作序列，要么全部执行，要么全部不执行</li>
+                        <li><strong>索引</strong>：提高数据检索效率的数据结构，类似于书籍的目录</li>
+                        <li><strong>锁机制</strong>：控制并发访问，保证数据一致性</li>
+                        <li><strong>日志系统</strong>：记录数据库变更，用于恢复和复制</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 安装配置 -->
+        <section id="installation" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL安装与配置</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">安装MySQL</h3>
+                <p class="mb-4">MySQL可以在多种操作系统上安装，下面介绍常见操作系统的安装方法：</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-windows text-blue-600 mr-2"></i>
+                            Windows安装
+                        </h4>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>从MySQL官网下载安装包（https://dev.mysql.com/downloads/installer/）</li>
+                            <li>运行安装程序，选择"Developer Default"配置</li>
+                            <li>按照向导完成安装，设置root密码</li>
+                            <li>配置环境变量，将MySQL的bin目录添加到PATH</li>
+                            <li>通过命令行验证安装：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">mysql -u root -p</code></li>
+                        </ol>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-linux text-orange-500 mr-2"></i>
+                            Ubuntu/Debian安装
+                        </h4>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>更新包索引：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">sudo apt update</code></li>
+                            <li>安装MySQL服务器：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">sudo apt install mysql-server</code></li>
+                            <li>启动MySQL服务：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">sudo systemctl start mysql</code></li>
+                            <li>设置开机自启：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">sudo systemctl enable mysql</code></li>
+                            <li>运行安全脚本：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">sudo mysql_secure_installation</code></li>
+                        </ol>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-apple text-gray-700 mr-2"></i>
+                            macOS安装
+                        </h4>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>使用Homebrew安装：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">brew install mysql</code></li>
+                            <li>启动MySQL服务：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">brew services start mysql</code></li>
+                            <li>设置root密码：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">mysql_secure_installation</code></li>
+                            <li>验证安装：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">mysql -u root -p</code></li>
+                        </ol>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-docker text-blue-400 mr-2"></i>
+                            Docker安装
+                        </h4>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>拉取MySQL镜像：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">docker pull mysql:8.0</code></li>
+                            <li>运行容器：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">docker run --name mysql -e MYSQL_ROOT_PASSWORD=your_password -p 3306:3306 -d mysql:8.0</code></li>
+                            <li>进入容器：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">docker exec -it mysql bash</code></li>
+                            <li>连接MySQL：<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">mysql -u root -p</code></li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <h3 class="sub-heading">配置MySQL</h3>
+                <p class="mb-4">MySQL的主要配置文件是my.cnf或my.ini，通常位于/etc/mysql/或MySQL安装目录下。下面是一些重要的配置项：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>[mysqld]
+# 基础设置
+port = 3306
+bind-address = 0.0.0.0  # 允许远程连接
+datadir = /var/lib/mysql
+socket = /var/run/mysqld/mysqld.sock
+
+# 字符集设置
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# 内存设置
+innodb_buffer_pool_size = 1G  # 关键性能参数，通常设置为物理内存的50-75%
+key_buffer_size = 128M
+sort_buffer_size = 2M
+read_buffer_size = 2M
+
+# 日志设置
+log-error = /var/log/mysql/error.log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2  # 超过2秒的查询记录到慢查询日志
+
+# 安全设置
+skip-networking = 0  # 禁用则只允许本地连接
+max_connections = 200  # 最大连接数</pre>
+                </div>
+                
+                <p class="mb-4">配置修改后，需要重启MySQL服务使设置生效：</p>
+                <div class="bg-gray-200 p-3 rounded-lg mb-4">
+                    <p><strong>Linux/macOS:</strong> <code>sudo systemctl restart mysql</code></p>
+                    <p><strong>Windows:</strong> 在服务管理器中重启MySQL服务</p>
+                </div>
+                
+                <h3 class="sub-heading">连接MySQL</h3>
+                <p class="mb-4">安装完成后，可以使用以下方式连接到MySQL服务器：</p>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold mb-3">命令行工具</h4>
+                    <p class="mb-2">使用mysql命令行客户端：</p>
+                    <div class="code-block">
+                        <pre>mysql -h hostname -u username -p</pre>
+                    </div>
+                    <p class="mt-3">参数说明：</p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><code>-h</code>：指定服务器主机名（默认localhost）</li>
+                        <li><code>-u</code>：指定用户名（如root）</li>
+                        <li><code>-p</code>：提示输入密码</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold mb-3">图形化工具</h4>
+                    <p>常用的MySQL图形化管理工具：</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>MySQL Workbench</strong>：官方提供的集成开发环境</li>
+                        <li><strong>Navicat</strong>：功能强大的跨平台数据库管理工具</li>
+                        <li><strong>HeidiSQL</strong>：轻量级Windows数据库管理工具</li>
+                        <li><strong>DBeaver</strong>：开源的通用数据库管理工具</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-exclamation-triangle text-yellow-500 mr-2"></i>安装注意事项</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>设置强密码并妥善保管root账户</li>
+                        <li>生产环境建议关闭远程root登录</li>
+                        <li>定期备份配置文件和数据</li>
+                        <li>监控MySQL服务资源使用情况</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 基本操作 -->
+        <section id="basic-operations" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL基本操作</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">数据库操作</h3>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">创建数据库</h4>
+                    <div class="code-block">
+                        <pre>CREATE DATABASE database_name
+    [CHARACTER SET charset_name]
+    [COLLATE collation_name];</pre>
+                    </div>
+                    <p class="mt-2">示例：</p>
+                    <div class="code-block">
+                        <pre>CREATE DATABASE ecommerce CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">查看数据库</h4>
+                    <div class="code-block">
+                        <pre>SHOW DATABASES;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">选择数据库</h4>
+                    <div class="code-block">
+                        <pre>USE database_name;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">删除数据库</h4>
+                    <div class="code-block">
+                        <pre>DROP DATABASE database_name;</pre>
+                    </div>
+                </div>
+                
+                <h3 class="sub-heading">表操作</h3>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">创建表</h4>
+                    <div class="code-block">
+                        <pre>CREATE TABLE table_name (
+    column1 datatype [constraint],
+    column2 datatype [constraint],
+    ...
+    [table_constraint]
+) [engine=InnoDB];</pre>
+                    </div>
+                    <p class="mt-2">示例：</p>
+                    <div class="code-block">
+                        <pre>CREATE TABLE customers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    age INT CHECK (age >= 18),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">查看表结构</h4>
+                    <div class="code-block">
+                        <pre>DESCRIBE table_name;
+或
+SHOW CREATE TABLE table_name;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">修改表</h4>
+                    <p class="mb-2">添加列：</p>
+                    <div class="code-block">
+                        <pre>ALTER TABLE table_name ADD column_name datatype [constraint];</pre>
+                    </div>
+                    <p class="mt-3 mb-2">修改列：</p>
+                    <div class="code-block">
+                        <pre>ALTER TABLE table_name MODIFY column_name datatype [constraint];</pre>
+                    </div>
+                    <p class="mt-3 mb-2">删除列：</p>
+                    <div class="code-block">
+                        <pre>ALTER TABLE table_name DROP COLUMN column_name;</pre>
+                    </div>
+                    <p class="mt-3 mb-2">重命名表：</p>
+                    <div class="code-block">
+                        <pre>RENAME TABLE old_table_name TO new_table_name;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">删除表</h4>
+                    <div class="code-block">
+                        <pre>DROP TABLE table_name;</pre>
+                    </div>
+                </div>
+                
+                <h3 class="sub-heading">数据操作</h3>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">插入数据</h4>
+                    <p class="mb-2">基本语法：</p>
+                    <div class="code-block">
+                        <pre>INSERT INTO table_name (column1, column2, ...)
+VALUES (value1, value2, ...);</pre>
+                    </div>
+                    <p class="mt-3 mb-2">批量插入：</p>
+                    <div class="code-block">
+                        <pre>INSERT INTO table_name (column1, column2, ...)
+VALUES (value1_1, value1_2, ...),
+       (value2_1, value2_2, ...),
+       ...;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">查询数据</h4>
+                    <p class="mb-2">基本查询：</p>
+                    <div class="code-block">
+                        <pre>SELECT column1, column2, ...
+FROM table_name
+[WHERE condition]
+[GROUP BY column]
+[HAVING condition]
+[ORDER BY column [ASC|DESC]]
+[LIMIT offset, count];</pre>
+                    </div>
+                    <p class="mt-3 mb-2">示例：</p>
+                    <div class="code-block">
+                        <pre>SELECT id, name, email
+FROM customers
+WHERE age > 25
+ORDER BY created_at DESC
+LIMIT 10;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">更新数据</h4>
+                    <div class="code-block">
+                        <pre>UPDATE table_name
+SET column1 = value1, column2 = value2, ...
+[WHERE condition];</pre>
+                    </div>
+                    <p class="mt-2">示例：</p>
+                    <div class="code-block">
+                        <pre>UPDATE customers
+SET age = age + 1
+WHERE id = 1;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">删除数据</h4>
+                    <div class="code-block">
+                        <pre>DELETE FROM table_name
+[WHERE condition];</pre>
+                    </div>
+                    <p class="mt-2">示例：</p>
+                    <div class="code-block">
+                        <pre>DELETE FROM customers
+WHERE id = 1;</pre>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-info-circle text-blue-500 mr-2"></i>SQL语句注意事项</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>SQL语句不区分大小写（关键字、表名、列名等），但字符串值区分大小写</li>
+                        <li>每个SQL语句以分号(;)结束</li>
+                        <li>建议使用大写表示SQL关键字，小写表示表名和列名，提高可读性</li>
+                        <li>使用单引号(')包围字符串值</li>
+                        <li>避免使用SQL保留字作为表名或列名</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据类型 -->
+        <section id="data-types" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL数据类型</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <p class="mb-6">MySQL支持多种数据类型，主要分为三类：数值类型、日期和时间类型、字符串类型。选择合适的数据类型对性能和存储效率至关重要。</p>
+                
+                <h3 class="sub-heading">数值类型</h3>
+                
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100 text-gray-700">
+                            <tr>
+                                <th class="py-3 px-4 text-left">类型</th>
+                                <th class="py-3 px-4 text-left">存储空间</th>
+                                <th class="py-3 px-4 text-left">范围</th>
+                                <th class="py-3 px-4 text-left">描述</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="py-3 px-4 font-medium">TINYINT</td>
+                                <td class="py-3 px-4">1字节</td>
+                                <td class="py-3 px-4">-128 到 127（有符号）或 0 到 255（无符号）</td>
+                                <td class="py-3 px-4">小整数值</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">SMALLINT</td>
+                                <td class="py-3 px-4">2字节</td>
+                                <td class="py-3 px-4">-32,768 到 32,767（有符号）或 0 到 65,535（无符号）</td>
+                                <td class="py-3 px-4">大整数值</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">INT</td>
+                                <td class="py-3 px-4">4字节</td>
+                                <td class="py-3 px-4">-2,147,483,648 到 2,147,483,647（有符号）或 0 到 4,294,967,295（无符号）</td>
+                                <td class="py-3 px-4">大整数值</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">BIGINT</td>
+                                <td class="py-3 px-4">8字节</td>
+                                <td class="py-3 px-4">-9,223,372,036,854,775,808 到 9,223,372,036,854,775,807（有符号）或 0 到 18,446,744,073,709,551,615（无符号）</td>
+                                <td class="py-3 px-4">极大整数值</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">FLOAT</td>
+                                <td class="py-3 px-4">4字节</td>
+                                <td class="py-3 px-4">单精度浮点数</td>
+                                <td class="py-3 px-4">小浮点数</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">DOUBLE</td>
+                                <td class="py-3 px-4">8字节</td>
+                                <td class="py-3 px-4">双精度浮点数</td>
+                                <td class="py-3 px-4">大浮点数</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">DECIMAL</td>
+                                <td class="py-3 px-4">可变</td>
+                                <td class="py-3 px-4">依赖于M和D参数</td>
+                                <td class="py-3 px-4">精确的小数值，适用于财务计算</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 class="sub-heading">日期和时间类型</h3>
+                
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100 text-gray-700">
+                            <tr>
+                                <th class="py-3 px-4 text-left">类型</th>
+                                <th class="py-3 px-4 text-left">存储空间</th>
+                                <th class="py-3 px-4 text-left">格式</th>
+                                <th class="py-3 px-4 text-left">描述</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="py-3 px-4 font-medium">DATE</td>
+                                <td class="py-3 px-4">3字节</td>
+                                <td class="py-3 px-4">YYYY-MM-DD</td>
+                                <td class="py-3 px-4">日期值</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">TIME</td>
+                                <td class="py-3 px-4">3字节</td>
+                                <td class="py-3 px-4">HH:MM:SS</td>
+                                <td class="py-3 px-4">时间值或持续时间</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">DATETIME</td>
+                                <td class="py-3 px-4">8字节</td>
+                                <td class="py-3 px-4">YYYY-MM-DD HH:MM:SS</td>
+                                <td class="py-3 px-4">日期和时间组合</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">TIMESTAMP</td>
+                                <td class="py-3 px-4">4字节</td>
+                                <td class="py-3 px-4">YYYY-MM-DD HH:MM:SS</td>
+                                <td class="py-3 px-4">时间戳，自动记录INSERT或UPDATE操作的时间</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">YEAR</td>
+                                <td class="py-3 px-4">1字节</td>
+                                <td class="py-3 px-4">YYYY</td>
+                                <td class="py-3 px-4">年份值</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 class="sub-heading">字符串类型</h3>
+                
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100 text-gray-700">
+                            <tr>
+                                <th class="py-3 px-4 text-left">类型</th>
+                                <th class="py-3 px-4 text-left">存储空间</th>
+                                <th class="py-3 px-4 text-left">最大长度</th>
+                                <th class="py-3 px-4 text-left">描述</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="py-3 px-4 font-medium">CHAR</td>
+                                <td class="py-3 px-4">0-255字节</td>
+                                <td class="py-3 px-4">固定长度字符串</td>
+                                <td class="py-3 px-4">存储定长字符串，右侧填充空格</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">VARCHAR</td>
+                                <td class="py-3 px-4">0-65,535字节</td>
+                                <td class="py-3 px-4">可变长度字符串</td>
+                                <td class="py-3 px-4">存储变长字符串，节省空间</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">TEXT</td>
+                                <td class="py-3 px-4">0-65,535字节</td>
+                                <td class="py-3 px-4">长文本数据</td>
+                                <td class="py-3 px-4">不支持默认值</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">BLOB</td>
+                                <td class="py-3 px-4">0-65,535字节</td>
+                                <td class="py-3 px-4">二进制长文本数据</td>
+                                <td class="py-3 px-4">存储二进制数据，如图片、文件等</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">ENUM</td>
+                                <td class="py-3 px-4">1或2字节</td>
+                                <td class="py-3 px-4">最多65,535个值</td>
+                                <td class="py-3 px-4">枚举类型，只能从预定义值列表中选择一个</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-medium">SET</td>
+                                <td class="py-3 px-4">1-8字节</td>
+                                <td class="py-3 px-4">最多64个成员</td>
+                                <td class="py-3 px-4">集合类型，可以从预定义值列表中选择多个</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 class="sub-heading">数据类型选择原则</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>尽量使用最小的合适类型</strong>：例如，存储年龄用TINYINT而非INT，节省存储空间</li>
+                    <li><strong>对精确值使用整数类型</strong>：如数量、ID等</li>
+                    <li><strong>对财务数据使用DECIMAL</strong>：避免浮点数计算误差</li>
+                    <li><strong>对经常需要比较的日期时间使用DATETIME</strong>：范围更广</li>
+                    <li><strong>对固定长度字符串使用CHAR</strong>：如MD5哈希值、性别等</li>
+                    <li><strong>对变长字符串使用VARCHAR</strong>：如用户昵称、地址等</li>
+                    <li><strong>避免使用TEXT/BLOB类型</strong>：除非确实需要存储大文本或二进制数据</li>
+                </ul>
+                
+                <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-check-circle text-green-500 mr-2"></i>数据类型最佳实践</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>为字符串类型指定适当的长度，避免使用过大的长度</li>
+                        <li>使用TIMESTAMP存储时间戳，自动更新</li>
+                        <li>考虑使用UNSIGNED类型存储非负数值</li>
+                        <li>对需要进行数学计算的字段使用数值类型而非字符串</li>
+                        <li>避免在数据库中存储二进制文件，最好存储文件路径</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 高级操作 -->
+        <section id="advanced-operations" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL高级操作</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">多表查询</h3>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">内连接(INNER JOIN)</h4>
+                    <p class="mb-2">返回两个表中匹配的记录：</p>
+                    <div class="code-block">
+                        <pre>SELECT column1, column2, ...
+FROM table1
+INNER JOIN table2
+ON table1.column = table2.column;</pre>
+                    </div>
+                    <p class="mt-3 mb-2">示例：</p>
+                    <div class="code-block">
+                        <pre>SELECT customers.name, orders.order_date
+FROM customers
+INNER JOIN orders
+ON customers.id = orders.customer_id;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">左连接(LEFT JOIN)</h4>
+                    <p class="mb-2">返回左表的所有记录和右表匹配的记录：</p>
+                    <div class="code-block">
+                        <pre>SELECT column1, column2, ...
+FROM table1
+LEFT JOIN table2
+ON table1.column = table2.column;</pre>
+                    </div>
+                    <p class="mt-3 mb-2">示例：</p>
+                    <div class="code-block">
+                        <pre>SELECT customers.name, orders.order_date
+FROM customers
+LEFT JOIN orders
+ON customers.id = orders.customer_id;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">右连接(RIGHT JOIN)</h4>
+                    <p class="mb-2">返回右表的所有记录和左表匹配的记录：</p>
+                    <div class="code-block">
+                        <pre>SELECT column1, column2, ...
+FROM table1
+RIGHT JOIN table2
+ON table1.column = table2.column;</pre>
+                    </div>
+                    <p class="mt-3 mb-2">示例：</p>
+                    <div class="code-block">
+                        <pre>SELECT customers.name, orders.order_date
+FROM customers
+RIGHT JOIN orders
+ON customers.id = orders.customer_id;</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">全连接(FULL OUTER JOIN)</h4>
+                    <p class="mb-2">返回两个表中所有记录，匹配的记录合并：</p>
+                    <div class="code-block">
+                        <pre>SELECT column1, column2, ...
+FROM table1
+FULL OUTER JOIN table2
+ON table1.column = table2.column;</pre>
+                    </div>
+                    <p class="mt-3">注意：MySQL不直接支持FULL OUTER JOIN，可以用UNION实现：</p>
+                    <div class="code-block">
+                        <pre>SELECT column1, column2, ...
+FROM table1
+LEFT JOIN table2
+ON table1.column = table2.column
+UNION
+SELECT column1, column2, ...
+FROM table1
+RIGHT JOIN table2
+ON table1.column = table2.column;</pre>
+                    </div>
+                </div>
+                
+                <h3 class="sub-heading">子查询</h3>
+                
+                <p class="mb-4">子查询是嵌套在另一个查询中的查询，用于提供条件或值：</p>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">WHERE子句中的子查询</h4>
+                    <div class="code-block">
+                        <pre>SELECT column1, column2, ...
+FROM table
+WHERE column OPERATOR (SELECT column FROM table WHERE condition);</pre>
+                    </div>
+                    <p class="mt-3 mb-2">示例：</p>
+                    <div class="code-block">
+                        <pre>SELECT name
+FROM customers
+WHERE id IN (SELECT customer_id FROM orders WHERE amount > 1000);</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">FROM子句中的子查询</h4>
+                    <div class="code-block">
+                        <pre>SELECT t1.column1, t2.column2, ...
+FROM (SELECT column FROM table WHERE condition) AS t1
+JOIN table2 AS t2
+ON t1.column = t2.column;</pre>
+                    </div>
+                    <p class="mt-3 mb-2">示例：</p>
+                    <div class="code-block">
+                        <pre>SELECT customer_name, total_orders
+FROM (
+    SELECT customer_id, COUNT(*) AS total_orders
+    FROM orders
+    GROUP BY customer_id
+) AS order_summary
+JOIN customers
+ON order_summary.customer_id = customers.id;</pre>
+                    </div>
+                </div>
+                
+                <h3 class="sub-heading">事务处理</h3>
+                
+                <p class="mb-4">事务是一组不可分割的SQL操作，要么全部执行成功，要么全部失败回滚。</p>
+                
+                <div class="code-block mb-6">
+                    <pre>BEGIN;  -- 开始事务
+-- SQL语句1
+-- SQL语句2
+-- ...
+COMMIT;  -- 提交事务，永久保存更改
+-- 或
+ROLLBACK;  -- 回滚事务，撤销所有更改</pre>
+                </div>
+                
+                <p class="mb-4">事务的四个特性(ACID)：</p>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>原子性(Atomicity)</strong>：事务中的操作要么全部成功，要么全部失败</li>
+                    <li><strong>一致性(Consistency)</strong>：事务执行前后数据库保持一致状态</li>
+                    <li><strong>隔离性(Isolation)</strong>：多个事务并发执行时，相互之间互不干扰</li>
+                    <li><strong>持久性(Durability)</strong>：事务提交后，更改永久保存</li>
+                </ul>
+                
+                <h3 class="sub-heading">存储过程</h3>
+                
+                <p class="mb-4">存储过程是一组预编译的SQL语句，存储在数据库中，可以反复调用：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>DELIMITER $$
+CREATE PROCEDURE procedure_name([IN|OUT|INOUT] parameter datatype, ...)
+BEGIN
+    -- 存储过程体
+    -- SQL语句
+END$$
+DELIMITER ;</pre>
+                </div>
+                
+                <p class="mb-4">示例：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>DELIMITER $$
+CREATE PROCEDURE GetCustomerOrders(IN customer_id INT)
+BEGIN
+    SELECT *
+    FROM orders
+    WHERE customer_id = customer_id;
+END$$
+DELIMITER ;</pre>
+                </div>
+                
+                <p class="mb-4">调用存储过程：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>CALL GetCustomerOrders(1);</pre>
+                </div>
+                
+                <h3 class="sub-heading">触发器</h3>
+                
+                <p class="mb-4">触发器是在特定表上执行特定操作(INSERT、UPDATE、DELETE)时自动执行的SQL代码：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>DELIMITER $$
+CREATE TRIGGER trigger_name
+BEFORE|AFTER INSERT|UPDATE|DELETE
+ON table_name FOR EACH ROW
+BEGIN
+    -- 触发器体
+    -- SQL语句
+END$$
+DELIMITER ;</pre>
+                </div>
+                
+                <p class="mb-4">示例：记录订单创建时间</p>
+                
+                <div class="code-block mb-6">
+                    <pre>DELIMITER $$
+CREATE TRIGGER before_orders_insert
+BEFORE INSERT ON orders
+FOR EACH ROW
+BEGIN
+    SET NEW.created_at = NOW();
+END$$
+DELIMITER ;</pre>
+                </div>
+                
+                <div class="bg-red-50 rounded-lg p-4 border-l-4 border-red-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-warning text-red-500 mr-2"></i>高级操作注意事项</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>复杂查询会影响性能，尽量优化查询结构</li>
+                        <li>事务中包含的操作应尽量少，减少锁定时间</li>
+                        <li>存储过程和触发器应谨慎使用，避免过度复杂</li>
+                        <li>使用合适的索引提高多表查询性能</li>
+                        <li>注意事务隔离级别可能带来的问题</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 优化 -->
+        <section id="optimization" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL性能优化</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">查询优化</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>避免SELECT *</strong>：只选择需要的列，减少数据传输和内存使用</li>
+                    <li><strong>优化WHERE子句</strong>：将过滤条件放在前面，避免全表扫描</li>
+                    <li><strong>避免在WHERE子句中使用函数</strong>：会导致索引失效</li>
+                    <li><strong>使用EXISTS替代IN</strong>：对于大表，EXISTS通常比IN更高效</li>
+                    <li><strong>避免子查询</strong>：尽量用JOIN替代子查询</li>
+                    <li><strong>分批处理大结果集</strong>：使用LIMIT分页处理大量数据</li>
+                </ul>
+                
+                <h3 class="sub-heading">索引优化</h3>
+                
+                <p class="mb-4">索引是提高查询性能的关键，但过多的索引会影响写入性能和增加存储空间。</p>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">创建索引</h4>
+                    <div class="code-block">
+                        <pre>CREATE INDEX index_name
+ON table_name (column1, column2, ...);</pre>
+                    </div>
+                    <p class="mt-3 mb-2">创建唯一索引：</p>
+                    <div class="code-block">
+                        <pre>CREATE UNIQUE INDEX index_name
+ON table_name (column1, column2, ...);</pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-2">索引使用原则</h4>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>在经常用于WHERE子句、JOIN条件和ORDER BY的列上创建索引</strong></li>
+                        <li><strong>避免在小表上创建过多索引</strong></li>
+                        <li><strong>创建复合索引时，将最常用的列放在前面</strong></li>
+                        <li><strong>避免在低选择性列上创建索引</strong>（如性别字段）</li>
+                        <li><strong>定期分析和重建索引</strong>：<code>ANALYZE TABLE table_name;</code> 和 <code>OPTIMIZE TABLE table_name;</code></li>
+                    </ul>
+                </div>
+                
+                <h3 class="sub-heading">配置优化</h3>
+                
+                <p class="mb-4">合理配置MySQL参数可以显著提高性能：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>[mysqld]
+# 内存配置
+innodb_buffer_pool_size = 1G  # 关键参数，通常设置为物理内存的50-75%
+innodb_log_file_size = 256M
+key_buffer_size = 128M
+sort_buffer_size = 2M
+read_buffer_size = 2M
+
+# 查询缓存（MySQL 8.0已移除）
+query_cache_type = 1
+query_cache_size = 64M
+
+# 线程配置
+max_connections = 200  # 根据应用需求调整
+thread_cache_size = 50
+
+# 日志配置
+slow_query_log = 1  # 启用慢查询日志
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2  # 超过2秒的查询记录到慢查询日志
+
+# InnoDB配置
+innodb_flush_log_at_trx_commit = 2  # 权衡性能和持久性
+innodb_file_per_table = 1  # 每个表单独使用一个文件</pre>
+                </div>
+                
+                <h3 class="sub-heading">架构优化</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>读写分离</strong>：使用主从复制，将读操作分发到从服务器</li>
+                    <li><strong>分库分表</strong>：对数据量大的表进行水平或垂直拆分</li>
+                    <li><strong>使用缓存</strong>：在应用层添加缓存（如Redis），减少数据库访问</li>
+                    <li><strong>定期归档历史数据</strong>：将不常用的历史数据迁移到其他存储</li>
+                    <li><strong>使用SSD存储</strong>：提高I/O性能</li>
+                    <li><strong>监控和分析</strong>：使用工具如pt-query-digest分析慢查询日志</li>
+                </ul>
+                
+                <h3 class="sub-heading">执行计划分析</h3>
+                
+                <p class="mb-4">使用EXPLAIN语句分析查询执行计划，了解查询如何使用索引：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>EXPLAIN SELECT * FROM customers WHERE age > 30;</pre>
+                </div>
+                
+                <p class="mb-4">EXPLAIN输出重要字段说明：</p>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>id</strong>：查询执行的顺序编号</li>
+                    <li><strong>type</strong>：连接类型，常见值有system、const、eq_ref、ref、range、index、ALL</li>
+                    <li><strong>possible_keys</strong>：可能使用的索引</li>
+                    <li><strong>key</strong>：实际使用的索引</li>
+                    <li><strong>key_len</strong>：索引使用的字节数</li>
+                    <li><strong>rows</strong>：MySQL估计要扫描的行数</li>
+                    <li><strong>Extra</strong>：额外信息，如"Using filesort"、"Using temporary"等</li>
+                </ul>
+                
+                <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-tachometer text-blue-500 mr-2"></i>性能优化最佳实践</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>定期运行OPTIMIZE TABLE整理碎片，提高磁盘I/O性能</li>
+                        <li>避免大事务，减少锁定时间</li>
+                        <li>使用合适的数据类型，避免浪费存储空间</li>
+                        <li>监控服务器性能指标（CPU、内存、磁盘I/O、网络）</li>
+                        <li>为应用设计合适的查询模式，避免数据库做复杂计算</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 备份恢复 -->
+        <section id="backup-recovery" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL备份与恢复</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">备份策略</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>全量备份</strong>：备份整个数据库，包括所有表和数据</li>
+                    <li><strong>增量备份</strong>：只备份自上次备份以来发生变化的数据</li>
+                    <li><strong>日志备份</strong>：备份二进制日志，用于恢复到特定时间点</li>
+                    <li><strong>定期备份</strong>：根据数据重要性和变化频率确定备份周期</li>
+                    <li><strong>异地存储</strong>：将备份文件存储在不同地理位置，防止灾难</li>
+                </ul>
+                
+                <h3 class="sub-heading">备份方法</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-database text-primary mr-2"></i>
+                            mysqldump工具
+                        </h4>
+                        <p class="mb-3">备份单个数据库：</p>
+                        <div class="code-block">
+                            <pre>mysqldump -u username -p database_name > backup.sql</pre>
+                        </div>
+                        <p class="mt-3 mb-3">备份多个数据库：</p>
+                        <div class="code-block">
+                            <pre>mysqldump -u username -p --databases db1 db2 > backup.sql</pre>
+                        </div>
+                        <p class="mt-3 mb-3">备份所有数据库：</p>
+                        <div class="code-block">
+                            <pre>mysqldump -u username -p --all-databases > backup.sql</pre>
+                        </div>
+                        <p class="mt-3 text-sm text-gray-600">优点：简单易用，生成SQL脚本；缺点：备份和恢复速度慢，不适合大数据库</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-copy text-primary mr-2"></i>
+                            物理备份
+                        </h4>
+                        <p class="mb-3">停止MySQL服务后复制数据文件：</p>
+                        <div class="code-block">
+                            <pre>sudo systemctl stop mysql
+sudo cp -R /var/lib/mysql /backup/mysql_backup
+sudo systemctl start mysql</pre>
+                        </div>
+                        <p class="mt-3 text-sm text-gray-600">优点：备份和恢复速度快；缺点：需要停止服务，文件管理复杂</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-inbox text-primary mr-2"></i>
+                            xtrabackup工具
+                        </h4>
+                        <p class="mb-3">在线全量备份：</p>
+                        <div class="code-block">
+                            <pre>xtrabackup --user=username --password=password --backup --target-dir=/backup/full_backup</pre>
+                        </div>
+                        <p class="mt-3 text-sm text-gray-600">优点：在线备份，不影响业务；缺点：安装配置复杂</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-file-text-o text-primary mr-2"></i>
+                            二进制日志备份
+                        </h4>
+                        <p class="mb-3">启用二进制日志（在my.cnf中添加）：</p>
+                        <div class="code-block">
+                            <pre>[mysqld]
+log-bin=mysql-bin
+binlog-do-db=database_name</pre>
+                        </div>
+                        <p class="mt-3 mb-3">备份二进制日志：</p>
+                        <div class="code-block">
+                            <pre>mysqlbinlog mysql-bin.000001 > binlog.sql</pre>
+                        </div>
+                        <p class="mt-3 text-sm text-gray-600">优点：用于时间点恢复；缺点：单独使用无法恢复数据</p>
+                    </div>
+                </div>
+                
+                <h3 class="sub-heading">恢复方法</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-database text-primary mr-2"></i>
+                            从mysqldump恢复
+                        </h4>
+                        <p class="mb-3">创建新数据库：</p>
+                        <div class="code-block">
+                            <pre>mysql -u username -p -e "CREATE DATABASE database_name;"</pre>
+                        </div>
+                        <p class="mt-3 mb-3">恢复数据：</p>
+                        <div class="code-block">
+                            <pre>mysql -u username -p database_name < backup.sql</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-copy text-primary mr-2"></i>
+                            从物理备份恢复
+                        </h4>
+                        <p class="mb-3">停止MySQL服务：</p>
+                        <div class="code-block">
+                            <pre>sudo systemctl stop mysql</pre>
+                        </div>
+                        <p class="mt-3 mb-3">替换数据目录：</p>
+                        <div class="code-block">
+                            <pre>sudo rm -rf /var/lib/mysql/*
+sudo cp -R /backup/mysql_backup/* /var/lib/mysql/
+sudo chown -R mysql:mysql /var/lib/mysql</pre>
+                        </div>
+                        <p class="mt-3 mb-3">启动MySQL服务：</p>
+                        <div class="code-block">
+                            <pre>sudo systemctl start mysql</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-inbox text-primary mr-2"></i>
+                            从xtrabackup恢复
+                        </h4>
+                        <p class="mb-3">准备备份：</p>
+                        <div class="code-block">
+                            <pre>xtrabackup --prepare --target-dir=/backup/full_backup</pre>
+                        </div>
+                        <p class="mt-3 mb-3">停止MySQL服务：</p>
+                        <div class="code-block">
+                            <pre>sudo systemctl stop mysql</pre>
+                        </div>
+                        <p class="mt-3 mb-3">恢复备份：</p>
+                        <div class="code-block">
+                            <pre>sudo xtrabackup --copy-back --target-dir=/backup/full_backup
+sudo chown -R mysql:mysql /var/lib/mysql</pre>
+                        </div>
+                        <p class="mt-3 mb-3">启动MySQL服务：</p>
+                        <div class="code-block">
+                            <pre>sudo systemctl start mysql</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-clock-o text-primary mr-2"></i>
+                            时间点恢复
+                        </h4>
+                        <p class="mb-3">恢复到特定时间点：</p>
+                        <div class="code-block">
+                            <pre>mysqlbinlog --stop-datetime="2025-06-20 12:00:00" mysql-bin.000001 | mysql -u username -p database_name</pre>
+                        </div>
+                        <p class="mt-3 text-sm text-gray-600">需要结合全量备份和二进制日志</p>
+                    </div>
+                </div>
+                
+                <div class="bg-red-50 rounded-lg p-4 border-l-4 border-red-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-exclamation-triangle text-red-500 mr-2"></i>备份恢复注意事项</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>定期测试备份恢复流程，确保备份可用</li>
+                        <li>备份文件需要妥善保管，设置访问权限</li>
+                        <li>在恢复前先在测试环境验证</li>
+                        <li>大数据库建议使用物理备份方法</li>
+                        <li>二进制日志备份需要定期清理，避免占用过多空间</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 案例分析 -->
+        <section id="case-studies" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL案例分析</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">电商订单系统数据库设计</h3>
+                
+                <p class="mb-4">设计一个简单的电商订单系统数据库，包含以下实体：用户、商品、订单、订单详情。</p>
+                
+                <div class="code-block mb-6">
+                    <pre>-- 创建用户表
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 创建商品表
+CREATE TABLE products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    stock INT NOT NULL DEFAULT 0,
+    category VARCHAR(50),
+    brand VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 创建订单表
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+    payment_method ENUM('alipay', 'wechat', 'credit_card', 'cash') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- 创建订单详情表
+CREATE TABLE order_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- 创建索引
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_products_price ON products(price);</pre>
+                </div>
+                
+                <h4 class="font-semibold mb-3">数据库设计分析</h4>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>表关系</strong>：用户与订单是一对多关系，订单与订单详情是一对多关系，订单详情与商品是多对一关系</li>
+                    <li><strong>数据完整性</strong>：使用外键约束确保数据一致性</li>
+                    <li><strong>索引优化</strong>：在经常用于查询条件和连接的字段上创建索引</li>
+                    <li><strong>自动更新时间戳</strong>：使用ON UPDATE CURRENT_TIMESTAMP自动更新记录修改时间</li>
+                    <li><strong>枚举类型</strong>：在订单状态和支付方式字段使用枚举类型，限制取值范围</li>
+                </ul>
+                
+                <h3 class="sub-heading">性能优化案例</h3>
+                
+                <p class="mb-4">假设一个用户表有100万条记录，查询用户列表时性能缓慢，如何优化？</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-search text-primary mr-2"></i>
+                            问题查询
+                        </h4>
+                        <div class="code-block">
+                            <pre>SELECT * FROM users
+WHERE created_at > '2025-01-01'
+ORDER BY username
+LIMIT 50;</pre>
+                        </div>
+                        <p class="mt-3">该查询执行缓慢，尤其是在数据量大的情况下。</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-bolt text-primary mr-2"></i>
+                            优化方案
+                        </h4>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>创建复合索引：<code>CREATE INDEX idx_created_username ON users (created_at, username);</code></li>
+                            <li>避免SELECT *，只选择需要的字段</li>
+                            <li>分页查询时避免使用大偏移量，考虑使用书签式分页</li>
+                            <li>定期分析和重建索引</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <p class="mb-4">优化后的查询：</p>
+                
+                <div class="code-block mb-6">
+                    <pre>SELECT id, username, email, created_at
+FROM users
+WHERE created_at > '2025-01-01'
+ORDER BY username
+LIMIT 50;</pre>
+                </div>
+                
+                <h3 class="sub-heading">故障处理案例</h3>
+                
+                <p class="mb-4">假设MySQL服务器突然崩溃，如何恢复数据并找出问题原因？</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-exclamation-triangle text-red-500 mr-2"></i>
+                            故障现象
+                        </h4>
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li>MySQL服务无法启动</li>
+                            <li>错误日志显示InnoDB引擎初始化失败</li>
+                            <li>磁盘空间充足，内存足够</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-lg mb-3 flex items-center">
+                            <i class="fa fa-wrench text-primary mr-2"></i>
+                            解决步骤
+                        </h4>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>检查错误日志，发现ibdata1文件损坏</li>
+                            <li>从最近的全量备份恢复数据文件</li>
+                            <li>应用最新的二进制日志，恢复到崩溃前的状态</li>
+                            <li>启动MySQL服务，验证数据完整性</li>
+                            <li>分析崩溃原因，发现是磁盘I/O错误导致</li>
+                            <li>更换故障硬盘，确保数据安全</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-lightbulb-o text-green-500 mr-2"></i>案例总结</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>合理的数据库设计是性能的基础</li>
+                        <li>索引优化是提高查询性能的关键</li>
+                        <li>定期备份和监控是保障数据安全的重要措施</li>
+                        <li>遇到故障时，冷静分析日志，按步骤恢复</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 最佳实践 -->
+        <section id="best-practices" class="py-8 scroll-mt-20">
+            <h1 class="section-heading">MySQL最佳实践</h1>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="sub-heading">数据库设计最佳实践</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>遵循三范式</strong>：减少数据冗余，提高数据完整性</li>
+                    <li><strong>使用合适的数据类型</strong>：选择最小的合适类型，避免浪费存储空间</li>
+                    <li><strong>为表设置主键</strong>：每个表都应有一个主键，推荐使用自增整数</li>
+                    <li><strong>合理使用外键</strong>：使用外键约束维护数据一致性</li>
+                    <li><strong>避免大表设计</strong>：当表数据量超过500万行时，考虑分表</li>
+                    <li><strong>为关联字段添加索引</strong>：在JOIN、WHERE和ORDER BY子句中使用的字段上添加索引</li>
+                    <li><strong>考虑垂直拆分</strong>：将不常用的字段分离到单独的表中</li>
+                </ul>
+                
+                <h3 class="sub-heading">查询优化最佳实践</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>避免SELECT *</strong>：只选择需要的列，减少数据传输</li>
+                    <li><strong>优化WHERE子句</strong>：将过滤条件放在前面，避免全表扫描</li>
+                    <li><strong>避免在WHERE子句中使用函数</strong>：会导致索引失效</li>
+                    <li><strong>使用EXISTS替代IN</strong>：对于大表，EXISTS通常比IN更高效</li>
+                    <li><strong>避免子查询</strong>：尽量用JOIN替代子查询</li>
+                    <li><strong>分批处理大结果集</strong>：使用LIMIT分页处理大量数据</li>
+                    <li><strong>使用EXPLAIN分析查询</strong>：了解查询执行计划，优化索引</li>
+                </ul>
+                
+                <h3 class="sub-heading">安全最佳实践</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>设置强密码</strong>：为root和所有用户账户设置强密码</li>
+                    <li><strong>限制远程访问</strong>：只允许必要的IP地址远程访问MySQL</li>
+                    <li><strong>使用最小权限原则</strong>：为每个用户分配完成工作所需的最小权限</li>
+                    <li><strong>定期更新</strong>：及时更新MySQL到最新版本，修复安全漏洞</li>
+                    <li><strong>监控数据库活动</strong>：启用审计日志，监控异常活动</li>
+                    <li><strong>加密敏感数据</strong>：对敏感数据（如密码、信用卡号）进行加密存储</li>
+                    <li><strong>定期备份</strong>：定期备份数据库，并将备份存储在安全位置</li>
+                </ul>
+                
+                <h3 class="sub-heading">性能监控最佳实践</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>监控服务器资源</strong>：CPU、内存、磁盘I/O、网络</li>
+                    <li><strong>监控数据库状态</strong>：连接数、查询性能、缓冲池命中率</li>
+                    <li><strong>分析慢查询日志</strong>：找出执行时间长的查询并优化</li>
+                    <li><strong>监控复制延迟</strong>：对于主从复制环境，监控从库延迟</li>
+                    <li><strong>设置告警阈值</strong>：为关键指标设置告警阈值，及时发现问题</li>
+                    <li><strong>使用监控工具</strong>：如Prometheus、Grafana、Percona Toolkit等</li>
+                    <li><strong>定期性能评估</strong>：定期评估数据库性能，提前发现潜在问题</li>
+                </ul>
+                
+                <h3 class="sub-heading">高可用性最佳实践</h3>
+                
+                <ul class="list-disc pl-5 space-y-2 mb-6">
+                    <li><strong>主从复制</strong>：设置主从复制，提高读性能和可用性</li>
+                    <li><strong>主主复制</strong>：对于读写均衡的应用，考虑主主复制</li>
+                    <li><strong>集群部署</strong>：使用MySQL Cluster或InnoDB Cluster实现高可用集群</li>
+                    <li><strong>负载均衡</strong>：使用负载均衡器（如HAProxy、ProxySQL）分发请求</li>
+                    <li><strong>自动故障转移</strong>：设置自动故障转移机制，减少停机时间</li>
+                    <li><strong>异地多活</strong>：对于关键业务，考虑异地多活部署</li>
+                    <li><strong>定期灾难恢复演练</strong>：确保在灾难发生时能够快速恢复</li>
+                </ul>
+                
+                <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
+                    <h4 class="font-semibold mb-2"><i class="fa fa-check-circle text-blue-500 mr-2"></i>MySQL学习资源推荐</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>官方文档</strong>：MySQL官方文档是最权威的学习资源</li>
+                        <li><strong>《高性能MySQL》</strong>：MySQL性能优化的经典书籍</li>
+                        <li><strong>MySQL官方博客</strong>：获取最新技术动态和最佳实践</li>
+                        <li><strong>Percona博客</strong>：提供MySQL优化、监控和管理的深度文章</li>
+                        <li><strong>Stack Overflow</strong>：解决实际问题的社区</li>
+                        <li><strong>MySQL User Groups</strong>：参加本地或线上的用户组活动</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-dark text-white py-12">
+        <div class="content-container">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">MySQL学习攻略</h3>
+                    <p>全面深入的MySQL学习指南，从基础到高级，助你掌握MySQL数据库开发与管理技能。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#overview" class="text-gray-300 hover:text-white transition-colors">概述</a></li>
+                        <li><a href="#principle" class="text-gray-300 hover:text-white transition-colors">原理</a></li>
+                        <li><a href="#installation" class="text-gray-300 hover:text-white transition-colors">安装配置</a></li>
+                        <li><a href="#basic-operations" class="text-gray-300 hover:text-white transition-colors">基本操作</a></li>
+                        <li><a href="#advanced-operations" class="text-gray-300 hover:text-white transition-colors">高级操作</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">资源</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#optimization" class="text-gray-300 hover:text-white transition-colors">性能优化</a></li>
+                        <li><a href="#backup-recovery" class="text-gray-300 hover:text-white transition-colors">备份恢复</a></li>
+                        <li><a href="#case-studies" class="text-gray-300 hover:text-white transition-colors">案例分析</a></li>
+                        <li><a href="#best-practices" class="text-gray-300 hover:text-white transition-colors">最佳实践</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">关于</h3>
+                    <p>本学习攻略旨在帮助开发者全面掌握MySQL数据库技术，内容涵盖原理、操作、优化等方面。</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 MySQL学习攻略 | 保留所有权利</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    // 关闭移动菜单（如果打开）
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                    
+                    // 平滑滚动到目标位置
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 更新活动导航项
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('shadow-lg');
+                header.classList.add('bg-white/95');
+                header.classList.add('backdrop-blur-sm');
+            } else {
+                header.classList.remove('shadow-lg');
+                header.classList.remove('bg-white/95');
+                header.classList.remove('backdrop-blur-sm');
+            }
+        });
+    </script>
+</body>
+</html></div>
